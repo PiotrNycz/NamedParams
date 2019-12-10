@@ -119,11 +119,19 @@ template <typename name, typename T>
 struct is_arg<name, arg<name, T>> : std::true_type {};
 
 template <typename name, typename T>
+struct arg
+{
+    T value;
+    DEBUG_ONLY(MEMBER_TRACE{"arg<", DEBUG::get_name<name>(), ",", DEBUG::get_name<T>(), "> = &", (void*)&value};)
+};
+
+
+template <typename name, typename T>
 struct param
 {
-    template <typename U>
-    param(U&&  a_, std::enable_if_t<is_arg<name, U>::value>* = nullptr)
-        : value(std::forward<U>(a_).value)
+    template <typename U, typename = std::enable_if_t<is_arg<name, U>::value>>
+    param(U&&  a_)
+           : value(std::forward<U>(a_).value)
     {
         SET_TRACE("param<", DEBUG::get_name<T>(), ",", DEBUG::get_name<U>(), ">(this->value = *", (void*)&value, ", value = *", (void*)&a_.value, "'", a_.value , "')");
     }
@@ -132,13 +140,6 @@ struct param
     T value;
 
     DEBUG_ONLY(MEMBER_TRACE;)
-};
-
-template <typename name, typename T>
-struct arg
-{
-    T value;
-    DEBUG_ONLY(MEMBER_TRACE{"arg<", DEBUG::get_name<name>(), ",", DEBUG::get_name<T>(), "> = &", (void*)&value};)
 };
 
 template <typename name>
